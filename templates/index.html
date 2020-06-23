@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>CIFAR10 Test</title>
+		<link href="/static/css/cropper.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.0/css/bulma.min.css">
+    <link rel="stylesheet" href="/static/css/all.min.css">
+		<script src="/static/js/cropper.js"></script>
+  </head>
+  <body>
+    <section class="section">
+      <div class="container">
+        <h1 class="title">
+          CIFAR10 Classification DEMO
+        </h1>
+      </div>
+    </section>
+    <section class="section">
+      <div class="container">
+        {% if result %}
+        <h3 class="subtitle" id="result">{{ result }}</h3>
+        {% endif %}
+				<figure class="image" style="width: 500px">
+                    {% if result %}
+                    <img id="preview" style="display: block; max-width: 100%" src="{{ img_url }}">
+                    {% else %}
+                    <img id="preview" style="display: block; max-width: 100%">
+                    {% endif %}
+				</figure>
+
+        <form class="form is-centered" action="/" method="post" enctype='multipart/form-data'>
+
+          <div class="file">
+            <label class="file-label">
+              <input class="file-input" id="fileinput" type="file" name="img">
+              <span class="file-cta">
+                <span class="file-icon">
+                  <i class="fas fa-upload"></i>
+                </span>
+                <span class="file-label" id="filename">
+                  Choose a file…
+                </span>
+              </span>
+            </label>
+          </div>
+
+					<br />
+          <label class="checkbox">
+            <input type="checkbox" name="resnet">
+            ResNet
+          </label>
+
+          <label class="checkbox">
+            <input type="checkbox" name="vgg">
+            VGG
+          </label>
+
+					<input type="hidden" id="crop_top" name="crop_top">
+					<input type="hidden" id="crop_left" name="crop_left">
+					<input type="hidden" id="crop_height" name="crop_height">
+					<input type="hidden" id="crop_width" name="crop_width">
+					<br />
+					<br />
+
+          <div class="field">
+            <p class="control">
+            <button class="button is-success">
+              Submit
+            </button>
+            </p>
+          </div>
+        </form>
+      </div>
+    </section>
+    <script>
+		  var cropper = null;
+			const preview = document.querySelector("#preview");
+      const fileInput = document.querySelector('#fileinput');
+			const fileName = document.querySelector('#filename');
+
+			var set_value = function () {
+				const c = cropper.getCropBoxData();
+				const canvas = cropper.getCanvasData();
+				const image = cropper.getImageData();
+				document.getElementById('crop_width').value  = c.width  * image.naturalWidth  / canvas.width;
+				document.getElementById('crop_height').value = c.height * image.naturalHeight / canvas.height;
+				document.getElementById('crop_left').value   = c.left   * image.naturalWidth  / canvas.width;
+				document.getElementById('crop_top').value    = c.top    * image.naturalHeight / canvas.height;
+			};
+
+			preview.addEventListener('ready', set_value)
+			preview.addEventListener('cropend', set_value)
+
+      fileInput.onchange = () => {
+        {% if result %}
+        document.getElementById("result").style.display = 'none';
+        {% endif %}
+        if (fileInput.files.length > 0) {
+				  if (cropper != null) {
+						cropper.destroy()
+					}
+
+          fileName.textContent = fileInput.files[0].name;
+
+					preview.src = URL.createObjectURL(fileInput.files[0])
+					cropper = new Cropper(preview, {
+						viewMode: 2,
+						aspectRatio: 1,
+						zoomable: false,
+						responsive: false, // Avoid unexpected zooming when resizing
+					});
+				}
+      }
+		</script>
+  </body>
+</html>
